@@ -1,0 +1,13 @@
+{
+  "name": "Resource Baseline",
+  "filename": "pos_expected_sales.csv",
+  "field_map": {
+    "business_date": "BusinessDate",
+    "source_system": "SourceSystem",
+    "venue_area": "VenueArea",
+    "expected_amount": "ExpectedAmount",
+    "expected_transaction_count": "ExpectedTransactionCount"
+  },
+  "amount_tolerance": 5.0,
+  "count_tolerance": 0
+}

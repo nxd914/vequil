@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-WB7KKWSS');</script>
+  <!-- End Google Tag Manager -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vequil · Agent Ledger</title>
+  <meta name="description" content="Vequil unified audit trail and activity ledger for AI agents." />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+  <link rel="icon" href="./logo.png" type="image/png" />
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WB7KKWSS"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+  <!-- Auth Gate -->
+  <div id="auth-gate" class="auth-gate">
+    <div class="auth-box">
+      <img src="./logo.png" alt="Vequil" style="height:52px;width:auto;object-fit:contain;margin-bottom:20px;" />
+      <div class="auth-title">Vequil Agent Ledger</div>
+      <div class="auth-sub">Account access only.</div>
+      <input type="password" id="api-key-input" class="auth-input" placeholder="Enter API key…" autocomplete="current-password" />
+      <button id="auth-submit" class="auth-btn">Unlock Dashboard</button>
+      <div id="auth-error" class="auth-error" style="display:none;">Invalid API key. Try again.</div>
+    </div>
+  </div>
+
+  <!-- Main App (hidden until authenticated) -->
+  <div id="app" class="app-shell" style="display:none;">
+
+    <!-- Sidebar Nav -->
+    <nav class="sidebar">
+      <a href="/" class="sb-logo">
+        <img src="./logo.png" alt="Vequil Logo" style="height:36px;width:auto;object-fit:contain;" />
+      </a>
+      <div class="sb-section-label">Overview</div>
+      <a href="#" class="sb-link active" id="nav-dashboard">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a href="#" class="sb-link" id="nav-queue">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Action Feed
+      </a>
+      <a href="#" class="sb-link" id="nav-processors">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Active Agents
+      </a>
+      <a href="#" class="sb-link" id="nav-reports">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Weekly Report Card
+      </a>
+      <div class="sb-section-label">Event History</div>
+      <select id="event-selector" class="sb-select">
+        <option value="">Current Run (latest)</option>
+      </select>
+      <input type="text" id="new-event-id" class="sb-input" placeholder="New Event Name (e.g. game_1)">
+      <div class="sb-section-label" style="margin-top:auto;">Engine</div>
+      <button id="run-btn" class="sb-run-btn">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Sync Ledger
+      </button>
+      <button id="logout-btn" class="sb-logout-btn">Sign out</button>
+    </nav>
+
+    <!-- Main content -->
+    <main class="main-content">
+
+      <!-- Header -->
+      <div class="top-bar">
+        <div>
+          <div class="top-bar-title">Vequil Agent Ledger</div>
+          <div class="top-bar-sub" id="generated-at">—</div>
+        </div>
+        <div class="top-bar-right">
+          <button id="export-btn" class="export-btn">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export Ledger
+          </button>
+          <div id="status-pill" class="status-pill idle">Idle</div>
+        </div>
+      </div>
+
+      <!-- Loading state -->
+      <div id="loading-state" class="loading-state" style="display:none;">
+        <div class="spinner"></div>
+        <div class="loading-text">Running reconciliation engine…<br><span class="loading-sub">This takes about 5 seconds for a full event dataset.</span></div>
+      </div>
+
+      <!-- Error state -->
+      <div id="error-state" class="error-state" style="display:none;">
+        <div class="error-icon">⚠</div>
+        <div id="error-msg">An error occurred.</div>
+        <button onclick="loadDashboard()" class="retry-btn">Try Again</button>
+      </div>
+
+      <!-- Dashboard content -->
+      <div id="dashboard-content">
+
+        <!-- KPI Metrics -->
+        <div class="metrics" id="metrics"></div>
+
+        <!-- Grid: Processors + Variance -->
+        <div class="dash-grid">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>Processors</h2>
+              <span class="panel-badge" id="proc-count"></span>
+            </div>
+            <div id="processor-summary"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h2>Expected vs. Settled</h2>
+            </div>
+            <div id="expected-summary"></div>
+          </div>
+        </div>
+
+        <!-- Exception queue table -->
+        <div class="panel" style="margin-top:16px;">
+          <div class="panel-head">
+            <h2>Exception Queue <span class="panel-badge danger" id="finding-count"></span></h2>
+            <div class="filter-row">
+              <input id="queue-filter" class="filter-input" placeholder="Filter by processor, type…" />
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table id="exception-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Agent</th>
+                  <th>Project / Path</th>
+                  <th>Action ID</th>
+                  <th>Resource / Cost</th>
+                  <th>Flag</th>
+                  <th>AI Audit</th>
+                  <th>Operator Review</th>
+                </tr>
+              </thead>
+              <tbody id="action-queue"></tbody>
+            </table>
+            <div id="no-results" class="no-results" style="display:none;">No matching exceptions.</div>
+          </div>
+        </div>
+
+      </div><!-- /dashboard-content -->
+
+    </main>
+  </div><!-- /app -->
+
+  <!-- Report Card Modal -->
+  <div id="report-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 style="font-size:18px;">Your Weekly Agent Report Card</h2>
+        <button id="close-modal" class="close-btn">&times;</button>
+      </div>
+      <div class="report-card-preview" id="report-card-preview">
+        <!-- Card content injected by JS -->
+      </div>
+      <div class="modal-footer">
+        <button id="share-x-btn" class="share-action-btn">Share on X</button>
+        <button id="copy-report-link" class="share-action-btn secondary">Copy Public Link</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
