@@ -129,6 +129,24 @@ curl -sS -H "X-API-Key: $DASHBOARD_API_KEY" \
   "http://localhost:8000/api/onboarding/quickstart"
 ```
 
+## Netlify one-command deploy
+
+If you prefer Netlify for the marketing site, use this setup once:
+
+```bash
+npm i -g netlify-cli
+netlify login
+netlify link
+```
+
+Then publish any time with one command:
+
+```bash
+./scripts/netlify_publish.sh
+```
+
+This deploys `web/static` to production (`netlify deploy --prod --dir web/static`).
+
 ## What Gets Logged
 
 - Every tool call and result

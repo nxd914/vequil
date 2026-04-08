@@ -1,9 +1,10 @@
 /* ─────────────────────────────────────────────────────────────
-   app.js — Vequil Agent Ledger
-   Handles: auth gate, live API polling, rendering action feeds
+   app.js — Vequil Operations Console
+   Handles: auth gate, API polling, activity + anomaly rendering
    ───────────────────────────────────────────────────────────── */
 
 const LS_KEY = 'vequil_api_key';
+const LS_WORKSPACE_KEY = 'vequil_workspace_key';
 const API_BASE = '';          // same-origin; server.py serves everything
 
 // ── Utilities ────────────────────────────────────────────────
@@ -30,6 +31,7 @@ function storedKey() { return localStorage.getItem(LS_KEY); }
 function showApp() {
   $('auth-gate').style.display = 'none';
   $('app').style.display = 'flex';
+  hydrateActivation();
   loadHistory();
   loadDashboard();
 }
@@ -61,7 +63,7 @@ async function submitKey() {
     $('auth-error').style.display = 'block';
   } finally {
     $('auth-submit').disabled = false;
-    $('auth-submit').textContent = 'Unlock Ledger';
+    $('auth-submit').textContent = 'Unlock Console';
   }
 }
 
@@ -103,7 +105,7 @@ $('export-btn').addEventListener('click', async () => {
     const a = document.createElement('a');
     a.style.display = 'none';
     a.href = blobUrl;
-    a.download = `Vequil_Ledger_${eventId || 'Latest'}.xlsx`;
+    a.download = `Vequil_Report_${eventId || 'Latest'}.xlsx`;
     document.body.appendChild(a);
     a.click();
     
@@ -131,6 +133,93 @@ async function apiFetch(path, params = {}) {
   return res.json();
 }
 
+function workspaceKey() {
+  return localStorage.getItem(LS_WORKSPACE_KEY) || '';
+}
+
+function setActivationMessage(msg, isError = false) {
+  const node = $('activation-msg');
+  node.textContent = msg;
+  node.style.color = isError ? '#c0392b' : '';
+}
+
+function setActivationState(connected) {
+  const badge = $('activation-state');
+  badge.textContent = connected ? 'Connected' : 'Not Connected';
+  badge.className = connected ? 'panel-badge' : 'panel-badge danger';
+}
+
+function hydrateActivation() {
+  const key = workspaceKey();
+  $('workspace-key').value = key;
+  setActivationState(Boolean(key));
+}
+
+async function createWorkspace() {
+  const name = $('workspace-name').value.trim();
+  const slug = $('workspace-slug').value.trim().toLowerCase();
+  if (!name || !slug) {
+    setActivationMessage('Workspace name and slug are required.', true);
+    return;
+  }
+  try {
+    const key = storedKey();
+    const res = await fetch(`${window.location.origin}/api/workspaces`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(key ? { 'X-API-Key': key } : {})
+      },
+      body: JSON.stringify({ name, slug })
+    });
+    const payload = await res.json();
+    if (!res.ok) throw new Error(payload.detail || payload.error || 'Failed to create workspace');
+
+    const wsKey = payload.workspace.ingest_api_key;
+    localStorage.setItem(LS_WORKSPACE_KEY, wsKey);
+    $('workspace-key').value = wsKey;
+    setActivationState(true);
+    setActivationMessage(`Source connected for ${payload.workspace.name}. Next: send sample activity.`);
+  } catch (err) {
+    setActivationMessage(err.message || 'Workspace setup failed.', true);
+  }
+}
+
+async function sendSampleActivity() {
+  const wsKey = $('workspace-key').value.trim() || workspaceKey();
+  if (!wsKey) {
+    setActivationMessage('Connect source first to get a workspace key.', true);
+    return;
+  }
+  const sample = {
+    source: 'openclaw',
+    event_type: 'tool_call',
+    event_status: 'success',
+    event_at: new Date().toISOString(),
+    agent_id: 'main-agent',
+    session_id: 'main-session',
+    tool_name: 'bash',
+    cost_usd: 0.01,
+    metadata: { action_id: `sample-${Date.now()}`, environment: 'dashboard' }
+  };
+  try {
+    const res = await fetch(`${window.location.origin}/api/ingest`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Workspace-Key': wsKey
+      },
+      body: JSON.stringify(sample)
+    });
+    const payload = await res.json();
+    if (!res.ok) throw new Error(payload.detail || payload.error || 'Failed to send sample activity');
+    setActivationState(true);
+    setActivationMessage(`Sample activity accepted (event #${payload.event_id}).`);
+  } catch (err) {
+    setActivationMessage(err.message || 'Sample activity failed.', true);
+  }
+}
+
 async function loadHistory() {
   try {
     const data = await apiFetch('/api/history');
@@ -147,6 +236,17 @@ async function loadHistory() {
 }
 
 $('event-selector').addEventListener('change', () => loadDashboard());
+$('create-workspace-btn')?.addEventListener('click', createWorkspace);
+$('sample-activity-btn')?.addEventListener('click', sendSampleActivity);
+$('copy-key-btn')?.addEventListener('click', async () => {
+  const val = $('workspace-key').value.trim();
+  if (!val) {
+    setActivationMessage('No workspace key to copy yet.', true);
+    return;
+  }
+  await navigator.clipboard.writeText(val);
+  setActivationMessage('Workspace key copied.');
+});
 
 // ── Main load ─────────────────────────────────────────────────
 
@@ -191,7 +291,7 @@ async function loadDashboard(forceRun = false) {
     btn.disabled = false;
     btn.innerHTML = `
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-      Sync Ledger
+      Sync Activity
     `;
   }
 }
@@ -205,9 +305,9 @@ function renderAll(payload) {
   allActions = payload.discrepancies || [];
   renderActionFeed(allActions);
   $('generated-at').textContent =
-    `Last sync: ${new Date(payload.generated_at).toLocaleString()}`;
+    `Last refresh: ${new Date(payload.generated_at).toLocaleString()}`;
   $('proc-count').textContent = `${payload.processor_summary.length} active`;
-  $('finding-count').textContent = `${allActions.length} audits`;
+  $('finding-count').textContent = `${allActions.length} open`;
 }
 
 // ── Metrics ───────────────────────────────────────────────────
@@ -247,7 +347,7 @@ function renderAgentSummary(rows) {
     const left = el('div');
     left.append(el('div', 'summary-item-name', row.processor));
     left.append(el('div', 'summary-meta',
-      `${row.transactions.toLocaleString()} actions · ${row.flagged_transactions} flagged · ${row.findings} audits`));
+      `${row.transactions.toLocaleString()} actions · ${row.flagged_transactions} flagged · ${row.findings} open`));
     const amt = el('div', 'summary-amount', fmt(row.total_amount));
     item.append(left, amt);
     list.append(item);
@@ -408,7 +508,7 @@ function showReportCard() {
         <div class="ics-item">
           <span class="label">Weekly Activity</span>
           <div class="val">${totalActions.toLocaleString()} actions</div>
-          <div class="sub">Verified by Vequil Ledger</div>
+          <div class="sub">Verified by Vequil</div>
         </div>
         <div class="ics-item">
           <span class="label">Weirdest Anomaly</span>

@@ -10,8 +10,8 @@
   <!-- End Google Tag Manager -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vequil · Agent Ledger</title>
-  <meta name="description" content="Vequil unified audit trail and activity ledger for AI agents." />
+  <title>Vequil · Agent Operations Console</title>
+  <meta name="description" content="Vequil operations console for agent activity, anomalies, and reliability." />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="app.css" />
   <link rel="icon" href="./logo.png" type="image/png" />
@@ -25,7 +25,7 @@
   <div id="auth-gate" class="auth-gate">
     <div class="auth-box">
       <img src="./logo.png" alt="Vequil" style="height:52px;width:auto;object-fit:contain;margin-bottom:20px;" />
-      <div class="auth-title">Vequil Agent Ledger</div>
+      <div class="auth-title">Vequil Operations Console</div>
       <div class="auth-sub">Account access only.</div>
       <input type="password" id="api-key-input" class="auth-input" placeholder="Enter API key…" autocomplete="current-password" />
       <button id="auth-submit" class="auth-btn">Unlock Dashboard</button>
@@ -58,15 +58,15 @@
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         Weekly Report Card
       </a>
-      <div class="sb-section-label">Event History</div>
+      <div class="sb-section-label">Run History</div>
       <select id="event-selector" class="sb-select">
         <option value="">Current Run (latest)</option>
       </select>
-      <input type="text" id="new-event-id" class="sb-input" placeholder="New Event Name (e.g. game_1)">
-      <div class="sb-section-label" style="margin-top:auto;">Engine</div>
+      <input type="text" id="new-event-id" class="sb-input" placeholder="New Run Name (e.g. week_15)">
+      <div class="sb-section-label" style="margin-top:auto;">Operations</div>
       <button id="run-btn" class="sb-run-btn">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        Sync Ledger
+        Sync Activity
       </button>
       <button id="logout-btn" class="sb-logout-btn">Sign out</button>
     </nav>
@@ -77,13 +77,13 @@
       <!-- Header -->
       <div class="top-bar">
         <div>
-          <div class="top-bar-title">Vequil Agent Ledger</div>
+          <div class="top-bar-title">Vequil Operations Console</div>
           <div class="top-bar-sub" id="generated-at">—</div>
         </div>
         <div class="top-bar-right">
           <button id="export-btn" class="export-btn">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Export Ledger
+            Export Report
           </button>
           <div id="status-pill" class="status-pill idle">Idle</div>
         </div>
@@ -92,7 +92,7 @@
       <!-- Loading state -->
       <div id="loading-state" class="loading-state" style="display:none;">
         <div class="spinner"></div>
-        <div class="loading-text">Running reconciliation engine…<br><span class="loading-sub">This takes about 5 seconds for a full event dataset.</span></div>
+        <div class="loading-text">Refreshing activity intelligence…<br><span class="loading-sub">This usually takes a few seconds for a full workspace run.</span></div>
       </div>
 
       <!-- Error state -->
@@ -104,6 +104,26 @@
 
       <!-- Dashboard content -->
       <div id="dashboard-content">
+        <!-- Activation strip -->
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="panel-head">
+            <h2>5-Minute Activation</h2>
+            <span class="panel-badge" id="activation-state">Not Connected</span>
+          </div>
+          <div style="display:grid; gap:12px;">
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <input id="workspace-name" class="filter-input" placeholder="Workspace name (e.g. Context Operator)" style="max-width:320px;" />
+              <input id="workspace-slug" class="filter-input" placeholder="Workspace slug (e.g. context-operator)" style="max-width:260px;" />
+              <button id="create-workspace-btn" class="export-btn">Connect Source</button>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <input id="workspace-key" class="filter-input" placeholder="Workspace key appears here after connect" readonly style="min-width:520px;" />
+              <button id="copy-key-btn" class="export-btn">Copy Key</button>
+              <button id="sample-activity-btn" class="export-btn">Send Sample Activity</button>
+            </div>
+            <div id="activation-msg" class="top-bar-sub">Create a workspace, copy your key, then send sample activity to validate your setup.</div>
+          </div>
+        </div>
 
         <!-- KPI Metrics -->
         <div class="metrics" id="metrics"></div>
@@ -112,7 +132,7 @@
         <div class="dash-grid">
           <div class="panel">
             <div class="panel-head">
-              <h2>Processors</h2>
+            <h2>Agents</h2>
               <span class="panel-badge" id="proc-count"></span>
             </div>
             <div id="processor-summary"></div>
@@ -120,7 +140,7 @@
 
           <div class="panel">
             <div class="panel-head">
-              <h2>Expected vs. Settled</h2>
+            <h2>Variance Signals</h2>
             </div>
             <div id="expected-summary"></div>
           </div>
@@ -129,7 +149,7 @@
         <!-- Exception queue table -->
         <div class="panel" style="margin-top:16px;">
           <div class="panel-head">
-            <h2>Exception Queue <span class="panel-badge danger" id="finding-count"></span></h2>
+            <h2>Anomaly Queue <span class="panel-badge danger" id="finding-count"></span></h2>
             <div class="filter-row">
               <input id="queue-filter" class="filter-input" placeholder="Filter by processor, type…" />
             </div>
@@ -150,7 +170,7 @@
               </thead>
               <tbody id="action-queue"></tbody>
             </table>
-            <div id="no-results" class="no-results" style="display:none;">No matching exceptions.</div>
+            <div id="no-results" class="no-results" style="display:none;">No matching anomalies.</div>
           </div>
         </div>
 
