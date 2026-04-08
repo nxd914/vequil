@@ -1,20 +1,17 @@
 # 🔍 Vequil — AI Agent Ledger
 
 <p align="center">
-  <strong>See everything your agents do. Free, forever.</strong>
+  <strong>Observe every agent action in one place.</strong>
 </p>
 
 <p align="center">
   <a href="https://github.com/nxd914/vequil"><img src="https://img.shields.io/github/stars/nxd914/vequil?style=for-the-badge" alt="Stars"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="MIT License"></a>
-  <a href="https://moltbook.com"><img src="https://img.shields.io/badge/Moltbook-Community-orange?style=for-the-badge" alt="Moltbook"></a>
 </p>
 
-Vequil is a free, open-source ledger for AI agent activity. Connect any agent runtime and every action, tool call, and anomaly is automatically logged and surfaced in a real-time dashboard.
+Vequil is an open-source ledger for AI agent activity. Connect any runtime and Vequil records actions, tool calls, cost, and anomalies in a single dashboard and ingest API.
 
-> "847 agent actions last week. Operator approved 12." — that gap is what Vequil closes.
-
-[Dashboard](web/static/dashboard.html) · [OpenClaw Plugin](misc/openclaw/README_OPENCLAW.md) · [Pricing](#pricing)
+[Dashboard](web/static/dashboard.html) · [OpenClaw Plugin](misc/openclaw/README_OPENCLAW.md) · [Ingest API](#multi-tenant-ingestion)
 
 ## Quick Start
 
@@ -55,24 +52,6 @@ Environment variables used by the server:
 - `VEQUIL_REQUIRE_AUTH`: defaults to `1` (auth required). Set `0` only for local demos.
 - `VEQUIL_PUBLIC_RATE_LIMIT`: per-IP per-minute limit for public endpoints (default `60`).
 - `VEQUIL_CORS_ALLOW_ORIGIN`: CORS allow origin (default `*`).
-
-## Growth playbook
-
-For Moltbook distribution via OpenClaw, see [moltbook_go_to_market.md](docs/moltbook_go_to_market.md).
-
-### Generate Moltbook posts (local)
-
-Generate 3 Moltbook-ready drafts from your latest `dashboard.json`:
-
-```bash
-python scripts/moltbook_campaign.py
-```
-
-Optionally rewrite them via OpenClaw (must have `openclaw` in PATH):
-
-```bash
-python scripts/moltbook_campaign.py --openclaw --thinking high
-```
 
 ## Multi-tenant ingestion (beta)
 
@@ -129,24 +108,6 @@ curl -sS -H "X-API-Key: $DASHBOARD_API_KEY" \
   "http://localhost:8000/api/onboarding/quickstart"
 ```
 
-## Netlify one-command deploy
-
-If you prefer Netlify for the marketing site, use this setup once:
-
-```bash
-npm i -g netlify-cli
-netlify login
-netlify link
-```
-
-Then publish any time with one command:
-
-```bash
-./scripts/netlify_publish.sh
-```
-
-This deploys `web/static` to production (`netlify deploy --prod --dir web/static`).
-
 ## What Gets Logged
 
 - Every tool call and result
@@ -159,26 +120,9 @@ This deploys `web/static` to production (`netlify deploy --prod --dir web/static
 | Runtime | Status |
 |---|---|
 | OpenClaw | ✅ Live |
-| Anthropic API / Claude | 🔜 Coming soon |
-| OpenAI API | 🔜 Coming soon |
-| LangChain | 🔜 Coming soon |
-| Moltbook | 🔜 Coming soon |
+| Anthropic API / Claude | ✅ Live |
+| OpenAI API | ✅ Live |
+| LangChain | ✅ Live |
+| Moltbook | ✅ Live |
 
-## Pricing
-
-**Personal — Free forever**
-- Unlimited agents
-- Full activity ledger
-- Anomaly detection
-- 30-day history
-
-**Pro — $9/month**
-- Unlimited history
-- Advanced anomaly alerts
-- Team sharing
-- Priority support
-
-## Community
-
-Built for the [OpenClaw](https://github.com/openclaw/openclaw) and [Moltbook](https://moltbook.com) communities.
-Discuss in [m/openclaw-explorers](https://moltbook.com/m/openclaw-explorers).
+Vequil is runtime-agnostic. If your agent can POST JSON, it can send activity to `/api/ingest`.
