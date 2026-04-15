@@ -1,0 +1,28 @@
+# Secrets
+aws/
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Runtime data
+data/paper_fund.log*
+data/paper_fund.pid
+data/paper_trades.db
+data/kalshi_orderbooks.db
+
+# Testing
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Personal PDF stash — unrelated to this project, stored here for convenience
+/_pdfs/

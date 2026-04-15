@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  trading-loop:
+    build: .
+    restart: always
+    env_file: .env
+    volumes:
+      - ./quant/data:/app/quant/data
+      - ./.quant:/root/.quant:ro
+    command: python -m quant.daemon
+
+  observation-dashboard:
+    build: .
+    restart: always
+    ports:
+      - "80:8000"
+    volumes:
+      - ./quant/data:/app/quant/data
+    command: python dashboard.py
