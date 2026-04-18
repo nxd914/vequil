@@ -6,7 +6,7 @@ x# chiron
 [![Tests](https://img.shields.io/badge/tests-pytest-009688.svg?logo=pytest&logoColor=white)](./chiron/tests)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 
-Automated BTC/ETH arbitrage for [Kalshi](https://kalshi.com) prediction markets.
+Automated BTC/ETH arbitrage for prediction markets.
 
 **Edge**: crypto spot-price propagation latency between global CEX feeds (Binance.US / Coinbase) and Kalshi BTC/ETH probability contracts. Deterministic Black-Scholes N(d2) pricing, Kelly-capped sizing, zero learned parameters in the execution path.
 
