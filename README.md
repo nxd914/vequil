@@ -1,4 +1,4 @@
-# chiron
+x# chiron
 
 [![Python](https://img.shields.io/badge/python-3.11+-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![Kalshi](https://img.shields.io/badge/exchange-Kalshi-0a1628.svg)](https://kalshi.com)
@@ -74,11 +74,6 @@ Create a `.env` file at the repo root or export these in your shell.
 | Min seconds between fills | 30 |
 | Spread floor | 4% |
 
-## Paper results
-
-As of 2026-04-17: **8 fills, 100% win rate, +$391.73 realized P&L** on a $5,000 paper bankroll.
-
-Past paper performance is not indicative of future results.
 
 ## Development
 
