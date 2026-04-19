@@ -5,7 +5,8 @@ Covers:
 - Binance aggTrade message parsing
 - Coinbase ticker message parsing
 - Symbol normalization (BTCUSDT -> BTC, BTC-USD -> BTC)
-- Malformed message handling
+-
+ Malformed message handling
 """
 
 import json
