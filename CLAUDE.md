@@ -1,5 +1,3 @@
-# contributor reference
-
 ## System overview
 
 Spot-price propagation latency arbitrage on Kalshi crypto binary contracts. When BTC or ETH moves sharply on Binance or Coinbase, Kalshi's order book reprices seconds-to-minutes behind. The system measures that divergence with closed-form Black-Scholes N(d2) against Welford-estimated realized volatility, enters when edge exceeds 4%, and sizes positions with fee-adjusted Kelly criterion.

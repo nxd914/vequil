@@ -28,10 +28,14 @@ COINBASE_WS_URL = "wss://ws-feed.exchange.coinbase.com"
 _BINANCE_SYMBOL_MAP = {
     "BTCUSDT": "BTC",
     "ETHUSDT": "ETH",
+    "SOLUSDT": "SOL",
+    "XRPUSDT": "XRP",
 }
 _COINBASE_SYMBOL_MAP = {
     "BTC-USD": "BTC",
     "ETH-USD": "ETH",
+    "SOL-USD": "SOL",
+    "XRP-USD": "XRP",
 }
 
 # Internal symbol -> exchange subscription identifiers

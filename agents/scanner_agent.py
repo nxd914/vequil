@@ -59,7 +59,7 @@ TRADING_END_HOUR_UTC = 1      # 1 AM UTC (next day) = 9 PM ET
 IDLE_SCAN_INTERVAL_SECONDS = 600  # 10 minutes between scans outside trading hours
 
 # Kalshi series tickers to fetch directly (not discoverable via /events)
-CRYPTO_SERIES = ("KXBTC", "KXETH")
+CRYPTO_SERIES = ("KXBTC", "KXETH", "KXSOL", "KXXRP")
 
 # Crypto symbol -> Kalshi keyword matching
 # Use full words only — short abbreviations like "btc"/"eth" are substrings of
@@ -67,6 +67,8 @@ CRYPTO_SERIES = ("KXBTC", "KXETH")
 CRYPTO_KEYWORDS: dict[str, tuple[str, ...]] = {
     "BTC": ("bitcoin", "kxbtc"),
     "ETH": ("ethereum", "kxeth"),
+    "SOL": ("solana", "kxsol"),
+    "XRP": ("ripple", "kxxrp"),
 }
 
 # Regex patterns for strike extraction from ticker

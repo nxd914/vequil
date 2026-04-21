@@ -44,17 +44,24 @@ from latency.agents import (  # noqa: E402
     ScannerAgent,
     WebsocketAgent,
 )
+from latency.core.config import Config  # noqa: E402
 from latency.core.models import Signal, Tick, TradeOpportunity  # noqa: E402
 
 configure_logging()
 logger = logging.getLogger(__name__)
 
-BANKROLL_USDC = float(os.environ.get("BANKROLL_USDC", "100000.0"))
 TRACKED_SYMBOLS: list[str] = os.environ.get("TRACKED_SYMBOLS", "BTC,ETH").split(",")
+BANKROLL_USDC = float(os.environ.get("BANKROLL_USDC", "100000.0"))
 _SHUTDOWN_TIMEOUT_SECONDS = 10.0
+_PID_PATH = Path(__file__).resolve().parent / "data" / "paper_fund.pid"
 
 
 async def main() -> None:
+    config = Config.from_env()
+
+    _PID_PATH.parent.mkdir(parents=True, exist_ok=True)
+    _PID_PATH.write_text(str(os.getpid()))
+
     if os.environ.get("KALSHI_API_KEY", "").strip():
         logger.info("Kalshi API key present in environment (RSA PEM path must also be set for signing).")
     else:
@@ -64,9 +71,11 @@ async def main() -> None:
         )
 
     logger.info(
-        "Starting in %s mode | bankroll=%.2f USDC",
+        "Starting in %s mode | bankroll=%.2f USDC | min_edge=%.2f | max_positions=%d",
         os.environ.get("EXECUTION_MODE", "paper").upper(),
         BANKROLL_USDC,
+        config.min_edge,
+        config.max_concurrent_positions,
     )
 
     # Queues
@@ -89,11 +98,13 @@ async def main() -> None:
         bankroll_usdc=BANKROLL_USDC,
         price_cache=ws_agent.price_cache,
         crypto_features=feature_agent.latest_features,
+        min_edge=config.min_edge,
     )
     risk = RiskAgent(
         opportunity_queue=scanner_out_queue,
         approved_queue=approved_queue,
         bankroll_usdc=BANKROLL_USDC,
+        config=config,
     )
     execution = ExecutionAgent(
         approved_queue=approved_queue,
@@ -128,6 +139,8 @@ async def main() -> None:
         except asyncio.TimeoutError:
             still_running = [t.get_name() for t in tasks if not t.done()]
             logger.warning("Shutdown timed out after %.0fs — tasks still running: %s", _SHUTDOWN_TIMEOUT_SECONDS, still_running)
+    finally:
+        _PID_PATH.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":
