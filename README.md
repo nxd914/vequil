@@ -27,7 +27,7 @@ Research code must avoid look-ahead bias. Normalization for experiments should u
 
 ## C++ Acceleration Layer
 
-The research DataModule can delegate CPU-bound LOB preprocessing to an optional C++17/pybind11 extension. The extension builds relative price/volume features, applies backward-looking rolling normalization, constructs per-symbol rolling windows, and aligns future-return targets while releasing the Python GIL. If the compiled module is unavailable, the same `LOBDataModule` API falls back to the reference Python/NumPy implementation.
+The research DataModule delegates CPU-bound LOB preprocessing to a required C++17/pybind11 extension. This architectural decision was critical to bypass the Python GIL and ensure that high-frequency tick reconstruction—which includes building relative price/volume features, applying backward-looking rolling normalization, and constructing per-symbol rolling windows—does not bottleneck the deep learning training loop. While the API maintains a stable Python interface (`LOBDataModule`), the computational heavy-lifting remains strictly in C++.
 
 Build the extension locally:
 

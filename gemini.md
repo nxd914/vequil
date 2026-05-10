@@ -18,6 +18,7 @@ This repository is a quantitative research environment for limit-order-book micr
 
 ## Infrastructure Rules
 
+- **Strict Polyglot Rule:** High-frequency data parsing and LOB reconstruction must remain in C++. Python is restricted to PyTorch modeling and configuration.
 - Data ingestion must remain containerized. Production collection runs through Docker and the daemon entry point, not ad hoc scripts.
 - The PyTorch Lightning `LOBDataModule` is the single source of truth for tensor creation.
 - Model code must consume tensors produced by the DataModule rather than rebuilding feature windows independently.
